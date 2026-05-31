@@ -221,7 +221,13 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
     const artboardIndex = objects.findIndex((o) => (o as any).name === 'artboard');
 
     if (currentIndex < objects.length - 1) {
-      canvas.bringObjectForward(obj, false);
+      if (typeof canvas.moveObjectForward === 'function') {
+        canvas.moveObjectForward(obj, false);
+      } else if (typeof canvas.bringObjectForward === 'function') {
+        canvas.bringObjectForward(obj, false);
+      } else {
+        canvas.moveTo(obj, currentIndex + 1);
+      }
       canvas.requestRenderAll();
       refreshLayers();
     }
@@ -239,7 +245,11 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
     const artboardIndex = objects.findIndex((o) => (o as any).name === 'artboard');
 
     if (currentIndex > artboardIndex + 1) {
-      canvas.sendObjectBackwards(obj, false);
+      if (typeof canvas.sendObjectBackwards === 'function') {
+        canvas.sendObjectBackwards(obj, false);
+      } else {
+        canvas.moveTo(obj, currentIndex - 1);
+      }
       canvas.requestRenderAll();
       refreshLayers();
     }
@@ -251,7 +261,12 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
 
     const obj = findObjectByLayerId(canvas, layerId);
     if (obj) {
-      canvas.bringObjectToFront(obj);
+      if (typeof canvas.bringObjectToFront === 'function') {
+        canvas.bringObjectToFront(obj);
+      } else {
+        const objects = canvas.getObjects();
+        canvas.moveTo(obj, objects.length - 1);
+      }
       canvas.requestRenderAll();
       refreshLayers();
     }
@@ -266,10 +281,9 @@ export function CanvasProvider({ children }: { children: React.ReactNode }) {
 
     const objects = canvas.getObjects();
     const artboard = objects.find((o) => (o as any).name === 'artboard');
-    
-    canvas.remove(obj);
     const artboardIndex = objects.indexOf(artboard);
-    canvas.insertAt(obj, artboardIndex + 1, false);
+    
+    canvas.moveTo(obj, artboardIndex + 1);
     canvas.requestRenderAll();
     refreshLayers();
   }, [refreshLayers]);

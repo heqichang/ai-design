@@ -128,11 +128,14 @@ export default function Canvas({ canvasRef }: CanvasProps) {
         name: 'artboard',
       });
       canvas.add(rect);
-      canvas.sendObjectToBack(rect);
 
       if ((artboard as any).canvasData) {
         loadCanvasFromJSON((artboard as any).canvasData).then(() => {
-          canvas.sendObjectToBack(rect);
+          const objects = canvas.getObjects();
+          const artboardObj = objects.find((o) => (o as any).name === 'artboard');
+          if (artboardObj) {
+            canvas.moveTo(artboardObj, 0);
+          }
           canvas.forEachObject((obj) => {
             if ((obj as any).name === 'artboard') return;
             obj.set('selectable', currentTool === 'select');
